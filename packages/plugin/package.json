@@ -1,0 +1,23 @@
+{
+  "name": "@pieces-js/plugin",
+  "version": "0.0.6",
+  "main": "dist/src/index.js",
+  "license": "MIT",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "prepack": "pnpm build",
+    "dev": "tsc -b --watch",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@babel/core": "^7.16.0",
+    "postcss": "^8.3.11",
+    "unplugin": "^0.2.20"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.1.16",
+    "@types/node": "^16.11.7"
+  }
+}

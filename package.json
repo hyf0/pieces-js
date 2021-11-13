@@ -1,0 +1,23 @@
+{
+  "name": "pieces",
+  "version": "1.0.0",
+  "description": "Compile-time atomic css",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iheyunfei/pieces.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iheyunfei/pieces/issues"
+  },
+  "homepage": "https://github.com/iheyunfei/pieces#readme",
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
+}

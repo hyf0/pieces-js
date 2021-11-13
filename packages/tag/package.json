@@ -1,0 +1,14 @@
+{
+  "name": "@pieces-js/tag",
+  "version": "0.0.2",
+  "main": "dist/src/index.js",
+  "files": [
+    "dist/*"
+  ],
+  "scripts": {
+    "prepack": "pnpm build",
+    "dev": "tsc -b --watch",
+    "build": "tsc -b"
+  },
+  "license": "MIT"
+}
