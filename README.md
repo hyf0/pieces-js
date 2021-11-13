@@ -1,6 +1,6 @@
 # pieces-js (WIP)
 
-Compile-time atomic css.
+Compile-time atomic CSS library.
 
 Heavily inspired by [stylex](https://twitter.com/ReactWeb/status/1459575294432473091) and [linaria](https://github.com/callstack/linaria).
 
