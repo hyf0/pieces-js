@@ -47,3 +47,18 @@ export default defineConfig({
   plugins: [piecesJs(), react()],
 })
 ```
+
+### with Webpack
+
+```ts
+const { webpackPlugin: piecesPlugin } = require('@pieces-js/plugin')
+
+
+module.exports = {
+  //...
+  plugins: [
+    piecesPlugin(),
+  ],
+  //...
+}
+```
