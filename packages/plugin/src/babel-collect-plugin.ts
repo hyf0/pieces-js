@@ -1,5 +1,5 @@
 import * as babel from '@babel/core';
-import { Visitor, BabelFileMetadata } from '@babel/core';
+import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core';
 import postcss, { AtRule, Declaration, Rule } from 'postcss';
 import { getUniqueId } from './helper';
 type Babel = typeof babel;
@@ -104,7 +104,7 @@ export default function collector ({
   };
 }
 
-export const transformAndCollect = (
+export const transformAndCollect = async (
   codes: string,
   filename: string,
 ) => {
@@ -118,17 +118,29 @@ export const transformAndCollect = (
 
   let ast = null as ReturnType<typeof babel.parse>
 
+  const parserPlugins: ParserOptions['plugins'] = [
+    'topLevelAwait',
+    'classProperties',
+    'classPrivateProperties',
+    'classPrivateMethods',
+    'importMeta',
+  ]
+
+  if (!filename.endsWith('.ts')) {
+    parserPlugins.push('jsx')
+  }
+
+  if (/\.tsx?$/.test(filename)) {
+    parserPlugins.push('typescript')
+  }
+
+
   try {
     ast = babel.parse(codes, {
       filename,
       parserOpts: {
         plugins: [
-          'jsx',
-          'typescript',
-          'topLevelAwait',
-          'classProperties',
-          'classPrivateProperties',
-          'classPrivateMethods'
+          ...parserPlugins,
         ]
       },
       // ...parseOptions,
@@ -137,18 +149,13 @@ export const transformAndCollect = (
     throw err
   }
 
-  const result = babel.transformFromAstSync(ast!, codes, {
+  const result = await babel.transformFromAstAsync(ast!, codes, {
     filename,
     //@ts-ignore
     plugins: [require.resolve('./babel-collect-plugin')],
     parserOpts: {
       plugins: [
-        'jsx',
-        'typescript',
-        'topLevelAwait',
-        'classProperties',
-        'classPrivateProperties',
-        'classPrivateMethods'
+        ...parserPlugins,
       ]
     },
     babelrc: false,

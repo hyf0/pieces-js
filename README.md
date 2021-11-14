@@ -1,12 +1,23 @@
-# pieces-js (WIP)
+# pieces-js
 
 Compile-time atomic CSS library.
 
 Heavily inspired by [stylex](https://twitter.com/ReactWeb/status/1459575294432473091) and [linaria](https://github.com/callstack/linaria).
 
+- [Install](#Install)
+- [Usage](#Usage)
+  - [Dynamic styles](#Dynamic-styles)
+  - [Setup with bundler](#Setup-with-bundler)
+    - [with Next.js](#with-Next.js)
+    - [with Vite](#with-Vite)
+    - [with Webpack](#with-Webpack)
+- [SSR](#SSR)
+<!-- - [Limitations](#Limitations) -->
+
 ## Example: https://github.com/iheyunfei/pieces-js-example
 
-# install
+# Install
+
 ```
 npm install @pieces-js/tag
 npm install -D @pieces-js/plugin
@@ -17,48 +28,153 @@ yarn add -D @pieces-js/plugin
 
 # Usage
 
-```tsx
-import { css } from '@pieces-js/tag'
-import { FC } from "react";
+## Basic
 
-const Foo: FC = () => {
+```tsx
+// Foo.tsx
+import { css } from "@pieces-js/tag";
+
+const Foo = () => {
+  return (
+    <div
+      className={css`
+        color: red;
+      `}
+    >
+      Foo
+    </div>
+  );
+};
+
+// Bar.tsx
+import { css } from "@pieces-js/tag";
+
+const Bar = () => {
+  return (
+    <div
+      className={css`
+        color: red;
+        font-size: 24px;
+      `}
+    >
+      Bar
+    </div>
+  );
+};
+
+// will compile to
+
+// Foo.tsx
+
+const Foo = () => {
+  return <div className={"_0ad5 _b04b"}>Foo</div>;
+};
+
+// Bar.tsx
+import { css } from "@pieces-js/tag";
+
+const Bar = () => {
+  return <div className={"_0ad5"}>Bar</div>;
+};
+```
+
+with gennerated style
+
+```css
+._b04b {
+  font-size: 24px;
+}
+
+._43fe {
+  color: red;
+}
+```
+
+## Dynamic styles
+
+```tsx
+import React from "react";
+import { css } from "@pieces-js/tag";
+
+export function Box({ size }) {
+  return (
+    <div
+      className={css`
+        height: var(--box-size);
+        width: var(--box-size);
+      `}
+      style={{ "--box-size": size }}
+    />
+  );
+}
+```
+
+
+### FYI
+
+- [Dynamic styles with css tag](https://github.com/callstack/linaria/blob/master/docs/DYNAMIC_STYLES.md)
+
+## `&` selector
+
+```tsx
+import { css } from "@pieces-js/tag";
+
+const Foo = () => {
   return (
     <div className={css`
-      color: red;
-      font-size: 24px;
-      border: 1px black solid;
+      &:hover {
+        animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        transform: translate3d(0, 0, 0);
+      }
     `}>foo</div>
   );
 }
-
-export default Bar;
 ```
 
-## setup with bundler
+## Setup with bundler
+
+### with Next.js
+
+Follow the setup with Webpack. The official pieces-js plugin is in WIP.
 
 ### with Vite
 
 ```ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { vitePlugin as piecesJs } from '@pieces-js/plugin'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import piecesJs from "@pieces-js/plugin";
 
 export default defineConfig({
-  plugins: [piecesJs(), react()],
-})
+  plugins: [piecesJs.vite(), react()],
+});
 ```
 
 ### with Webpack
 
 ```ts
-const { webpackPlugin: piecesPlugin } = require('@pieces-js/plugin')
-
+const piecesJs = require("@pieces-js/plugin");
 
 module.exports = {
   //...
-  plugins: [
-    piecesPlugin(),
-  ],
+  plugins: [piecesJs.webpack()],
   //...
-}
+};
 ```
+
+# SSR
+
+## Webpack
+
+As pieces-js just compile and extract your code into static css file, you could choose `isomorphic-style-loader` or `mini-css-extract-plugin` to implement SSR.
+
+### FYI
+
+- [Critical CSS extraction](https://github.com/callstack/linaria/blob/master/docs/CRITICAL_CSS.md)
+
+## Next.js
+
+If you are using pieces-js with Next.js, you don't need do anything.
+
+<!-- # Limitations
+
+## nested selector -->

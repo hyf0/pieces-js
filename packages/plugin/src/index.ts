@@ -7,9 +7,13 @@ const hashToNodeMap = new Map<string, (AtRule | Rule | Declaration)>()
 
 const virtualPrefix = 'virtual-pieces-js'
 
-export const unplugin = createUnplugin(() => {
+const piecesPlugin = createUnplugin<{
+  generate?: {
+    ext?: string,
+  }
+}>((pluginOptions) => {
   return {
-    name: 'pieces',
+    name: '@pieces-js/plugin',
     enforce: 'pre',
     transformInclude (id) {
       return ['.ts', 'tsx', '.js', '.jsx'].some(ext => id.endsWith(ext))
@@ -19,25 +23,22 @@ export const unplugin = createUnplugin(() => {
         return id
       }
     },
-    // just like rollup transform
-    transform (code, id) {
-    let { codes: outputCodes, cssNodes } = transformAndCollect(code, id);
-
-    if (cssNodes.length === 0) {
-    } else {
-      cssNodes.map(node => {
+    async transform (code, id) {
+      const ext = pluginOptions?.generate?.ext ?? '.css'
+      let { codes: outputCodes, cssNodes } = await transformAndCollect(code, id)
+        
+      cssNodes.forEach(node => {
         const hash = getUniqueId(node.toString(stringify))
         hashToNodeMap.set(hash, node)
-        outputCodes += `\n;import '${virtualPrefix}/${hash}.css';`;
+        outputCodes += `\n;import '${virtualPrefix}/${hash}${ext}';`;
       })
-    }
 
-    return outputCodes
-    
+      return outputCodes
     },
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
-        const hash = id.slice(id.indexOf('/') + 1, id.indexOf('.css'))
+        const ext = pluginOptions?.generate?.ext ?? '.css'
+        const hash = id.slice(id.indexOf('/') + 1, id.indexOf(ext))
         const node = hashToNodeMap.get(hash);
         return node!.toString(stringify)
       }
@@ -46,6 +47,7 @@ export const unplugin = createUnplugin(() => {
   }
 })
 
-export const vitePlugin = unplugin.vite
-export const rollupPlugin = unplugin.rollup
-export const webpackPlugin = unplugin.webpack
+export default piecesPlugin
+export const vitePlugin = piecesPlugin.vite
+export const rollupPlugin = piecesPlugin.rollup
+export const webpackPlugin = piecesPlugin.webpack
