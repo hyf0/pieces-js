@@ -14,7 +14,7 @@ Heavily inspired by [stylex](https://twitter.com/ReactWeb/status/145957529443247
 - [SSR](#SSR)
 <!-- - [Limitations](#Limitations) -->
 
-## Example: https://github.com/iheyunfei/pieces-js-example
+[Vite Example](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
 
 # Install
 
