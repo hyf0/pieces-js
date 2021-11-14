@@ -2,16 +2,19 @@ import { createUnplugin } from 'unplugin'
 import { AtRule, Declaration, Rule, stringify } from 'postcss';
 import { transformAndCollect } from './babel-collect-plugin'
 import { getUniqueId } from './helper';
+import { CSSNode } from './types';
 
-const hashToNodeMap = new Map<string, (AtRule | Rule | Declaration)>()
+const hashToNodeMap = new Map<string, CSSNode>()
 
 const virtualPrefix = 'virtual-pieces-js'
 
-const piecesPlugin = createUnplugin<{
+type PluginOptions = {
   generate?: {
     ext?: string,
   }
-}>((pluginOptions) => {
+}
+
+const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
   return {
     name: '@pieces-js/plugin',
     enforce: 'pre',
@@ -38,7 +41,7 @@ const piecesPlugin = createUnplugin<{
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
         const ext = pluginOptions?.generate?.ext ?? '.css'
-        const hash = id.slice(id.indexOf('/') + 1, id.indexOf(ext))
+        const hash = id.slice(id.indexOf('/') + 1, id.indexOf(`${ext}`))
         const node = hashToNodeMap.get(hash);
         return node!.toString(stringify)
       }
@@ -47,7 +50,39 @@ const piecesPlugin = createUnplugin<{
   }
 })
 
-export default piecesPlugin
+/**
+ * @description usage
+ * ```ts
+ * // next.config.js
+const piecesJs = require('@pieces-js/plugin')
+
+module.exports = piecesJs.next({
+  // plugin options
+})({
+  // next options
+})
+ * ```
+ */
+const next = (pluginOptions: PluginOptions) => (nextConfig: any): any => {
+  return Object.assign({}, nextConfig, {
+    webpack(config: any, options: any) {
+      config.plugins.push(
+        piecesPlugin.webpack(pluginOptions)
+      )
+
+      if (typeof nextConfig.webpack === 'function') {
+        return nextConfig.webpack(config, options)
+      }
+
+      return config
+    },
+  })
+}
+
+export default {
+  ...piecesPlugin,
+  next,
+}
 export const vitePlugin = piecesPlugin.vite
 export const rollupPlugin = piecesPlugin.rollup
 export const webpackPlugin = piecesPlugin.webpack

@@ -2,44 +2,39 @@ import * as babel from '@babel/core';
 import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core';
 import postcss, { AtRule, Declaration, Rule } from 'postcss';
 import { getUniqueId } from './helper';
-type Babel = typeof babel;
+import { CSSNode } from './types';
 
 const pkgName = '@pieces-js/tag';
 
-export class Metadata {
-  importName: string = ''
-  cssNodes: (AtRule | Rule | Declaration)[] = []
+export class PiecesMetadata {
+  importTagFnName: string = 'css'
+  cssNodes: CSSNode[] = []
 }
 
-export type WithMetadata = BabelFileMetadata & {
-  css: Metadata,
+export type WithPiecesMetadata = BabelFileMetadata & {
+  pieces: PiecesMetadata,
 }
 
 type State = {
   file: {
-    metadata: WithMetadata
+    metadata: WithPiecesMetadata
   }
 };
 
 export default function collector ({
   types: t,
-}: Babel): { visitor: Visitor<State> } {
-  // plugin contents
-
+}: typeof babel): { visitor: Visitor<State> } {
   return {
     visitor: {
-      // exit() {
-
-      // },
       Program(_, state) {
-        state.file.metadata.css = new Metadata();
+        state.file.metadata.pieces = new PiecesMetadata();
       },
       ImportDeclaration(path, state) {
         if (path.node.source.value === pkgName) {
           path.traverse({
             ImportSpecifier(path) {
-              if (path.node.local.name !== state.file.metadata.css.importName) {
-                state.file.metadata.css.importName = path.node.local.name;
+              if (path.node.local.name !== state.file.metadata.pieces.importTagFnName) {
+                state.file.metadata.pieces.importTagFnName = path.node.local.name;
               }
             },
           });
@@ -51,7 +46,7 @@ export default function collector ({
         const { node } = path;
         if (
           node.tag.type === 'Identifier' &&
-          node.tag.name === state.file.metadata.css.importName
+          node.tag.name === state.file.metadata.pieces.importTagFnName
         ) {
           const clsNameSet = new Set<string>();
           if (node.quasi.expressions.length > 0) {
@@ -67,9 +62,10 @@ export default function collector ({
           cssAst.cleanRaws();
 
           cssAst.walkAtRules((node) => {
-            state.file.metadata.css.cssNodes.push(node);
+            state.file.metadata.pieces.cssNodes.push(node);
             node.remove();
           });
+
           cssAst.walkRules((node) => {
             if (node.selector.includes('&')) {
               node.walkDecls((childDeclNode) => {
@@ -80,7 +76,7 @@ export default function collector ({
                 uniqueRule.selector = uniqueRule.selector.replace('&', `.${clsName}`);
                 clsNameSet.add(clsName);
                 uniqueRule.cleanRaws();
-                state.file.metadata.css.cssNodes.push(uniqueRule);
+                state.file.metadata.pieces.cssNodes.push(uniqueRule);
               });
             }
             node.remove();
@@ -93,7 +89,7 @@ export default function collector ({
             uniqueRule.selector = `.${clsName}`;
             clsNameSet.add(clsName);
             uniqueRule.cleanRaws();
-            state.file.metadata.css.cssNodes.push(uniqueRule);
+            state.file.metadata.pieces.cssNodes.push(uniqueRule);
           });
           path.replaceWith(t.stringLiteral([...clsNameSet.values()].join(' ')));
         } else {
@@ -164,8 +160,8 @@ export const transformAndCollect = async (
   });
   const { metadata, code: transformedCodes } = result!;
   const {
-    css: { cssNodes },
-  } = metadata! as WithMetadata;
+    pieces: { cssNodes },
+  } = metadata! as WithPiecesMetadata;
   return {
     codes: transformedCodes ?? codes,
     cssNodes,
