@@ -14,7 +14,7 @@ Heavily inspired by [stylex](https://twitter.com/ReactWeb/status/145957529443247
 - [SSR](#SSR)
 <!-- - [Limitations](#Limitations) -->
 
-[Vite Example](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
+[Online Example with Vite](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
 
 # Install
 
