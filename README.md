@@ -85,7 +85,7 @@ with gennerated style
   font-size: 24px;
 }
 
-._43fe {
+._0ad5 {
   color: red;
 }
 ```
