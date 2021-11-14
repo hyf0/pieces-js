@@ -8,7 +8,7 @@ Heavily inspired by [stylex](https://twitter.com/ReactWeb/status/145957529443247
 - [Usage](#Usage)
   - [Dynamic styles](#Dynamic-styles)
   - [Setup with bundler](#Setup-with-bundler)
-    - [with Next.js](#with-Next.js)
+    - [with Next.js](#with-nextjs)
     - [with Vite](#with-Vite)
     - [with Webpack](#with-Webpack)
 - [SSR](#SSR)
