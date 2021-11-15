@@ -1,6 +1,6 @@
 # pieces-js
 
-A library that __transform your regular CSS into Atomic CSS__. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
+A library that __transforms your regular CSS into Atomic CSS__. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
 
 [Online Example with Vite](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
 
