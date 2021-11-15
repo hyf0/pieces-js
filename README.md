@@ -1,6 +1,6 @@
 # pieces-js
 
-Compile-time atomic CSS library. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
+A library that __transform your regular CSS into Atomic CSS__. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
 
 [Online Example with Vite](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
 
@@ -8,7 +8,7 @@ Compile-time atomic CSS library. Heavily inspired by [stylex](https://www.youtub
 
 - Easy to use with __familiar CSS syntax__
 - __Zero runtime__
-- Transform your __regular CSS to be Atomic__ by compiler
+- Transform your __regular CSS into Atomic CSS__ by compiler
 - __Compiling on demand__ in development
 - No `xxx.config.js` 😉
 
