@@ -2,6 +2,8 @@
 
 Compile-time atomic CSS library. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
 
+[Online Example with Vite](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
+
 # Feature
 
 - Easy to use with __familiar CSS syntax__
@@ -21,8 +23,6 @@ Compile-time atomic CSS library. Heavily inspired by [stylex](https://www.youtub
     - [with Webpack](#with-Webpack)
 - [SSR](#SSR)
 <!-- - [Limitations](#Limitations) -->
-
-[Online Example with Vite](https://codesandbox.io/s/dazzling-sanderson-rzsv0)
 
 # Install
 
