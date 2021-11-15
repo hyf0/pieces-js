@@ -4,6 +4,7 @@
   "compilerOptions": {
     "composite": true,
     "target": "ES2019",
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",               /* Specify file to store incremental compilation information */
     "outDir": "dist"
   }
 }

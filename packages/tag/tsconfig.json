@@ -2,6 +2,7 @@
   "extends": "../tsconfig.setting.json",
   "include": ["src"],
   "compilerOptions": {
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",               /* Specify file to store incremental compilation information */
     "module": "CommonJS",
     "composite": true,
     "target": "ES5",
