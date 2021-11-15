@@ -1,10 +1,9 @@
 import { createUnplugin } from 'unplugin'
-import { AtRule, Declaration, Rule, stringify } from 'postcss';
-import { transformAndCollect } from './babel-collect-plugin'
-import { getUniqueId } from './helper';
-import { CSSNode } from './types';
+import { stringify } from 'postcss';
+import { pkgName, transformAndCollect } from './babel-collect-plugin'
+import { EnhancedNode } from './types';
 
-const hashToNodeMap = new Map<string, CSSNode>()
+const hashToNodeMap = new Map<string, EnhancedNode>()
 
 const virtualPrefix = 'virtual-pieces-js'
 
@@ -27,13 +26,17 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
       }
     },
     async transform (code, id) {
+      if (!code.includes(pkgName)) {
+        return null
+      }
+
       const ext = pluginOptions?.generate?.ext ?? '.css'
+
       let { codes: outputCodes, cssNodes } = await transformAndCollect(code, id)
         
       cssNodes.forEach(node => {
-        const hash = getUniqueId(node.toString(stringify))
-        hashToNodeMap.set(hash, node)
-        outputCodes += `\n;import '${virtualPrefix}/${hash}${ext}';`;
+        hashToNodeMap.set(node.hash, node)
+        outputCodes += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`;
       })
 
       return outputCodes
@@ -41,9 +44,9 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
         const ext = pluginOptions?.generate?.ext ?? '.css'
-        const hash = id.slice(id.indexOf('/') + 1, id.indexOf(`${ext}`))
+        const hash = id.slice(id.indexOf('id_') + 'id_'.length, id.indexOf(`${ext}`))
         const node = hashToNodeMap.get(hash);
-        return node!.toString(stringify)
+        return node!.node.toString(stringify)
       }
       return null
     }

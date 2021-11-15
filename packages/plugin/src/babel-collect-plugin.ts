@@ -1,14 +1,14 @@
 import * as babel from '@babel/core';
 import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core';
-import postcss, { AtRule, Declaration, Rule } from 'postcss';
+import postcss, { AtRule, Declaration, Rule, stringify } from 'postcss';
 import { getUniqueId } from './helper';
-import { CSSNode } from './types';
+import { EnhancedNode } from './types';
 
-const pkgName = '@pieces-js/tag';
+export const pkgName = '@pieces-js/tag';
 
 export class PiecesMetadata {
   importTagFnName: string = 'css'
-  cssNodes: CSSNode[] = []
+  cssNodes: EnhancedNode[] = []
 }
 
 export type WithPiecesMetadata = BabelFileMetadata & {
@@ -48,21 +48,29 @@ export default function collector ({
           node.tag.type === 'Identifier' &&
           node.tag.name === state.file.metadata.pieces.importTagFnName
         ) {
-          const clsNameSet = new Set<string>();
+
           if (node.quasi.expressions.length > 0) {
             throw new SyntaxError(
               `@pieces-js/plugin doesn't support css\` ... \$\{expression\} ...\``,
             );
           }
-          const template = node.quasi.quasis
+
+          const cssCode = node.quasi.quasis
             .map((node) => node.value.raw)
             .join('\n');
-          const cssAst = postcss.parse(template);
 
-          cssAst.cleanRaws();
+
+          const clsNameSet = new Set<string>();
+          
+          const cssAst = postcss.parse(cssCode);
+          cssAst.cleanRaws()
 
           cssAst.walkAtRules((node) => {
-            state.file.metadata.pieces.cssNodes.push(node);
+            const hash = getUniqueId(node.toString(stringify))
+            state.file.metadata.pieces.cssNodes.push({
+              hash,
+              node,
+            });
             node.remove();
           });
 
@@ -70,27 +78,41 @@ export default function collector ({
             if (node.selector.includes('&')) {
               node.walkDecls((childDeclNode) => {
                 const uniqueRule = new Rule();
-                uniqueRule.append(childDeclNode.toString());
+                uniqueRule.append(childDeclNode)
                 uniqueRule.selector = node.selector;
-                const clsName = getUniqueId(uniqueRule.toString());
-                uniqueRule.selector = uniqueRule.selector.replace('&', `.${clsName}`);
-                clsNameSet.add(clsName);
                 uniqueRule.cleanRaws();
-                state.file.metadata.pieces.cssNodes.push(uniqueRule);
+                // We need hash of 'decl + selector' to make no conflict with hash of decl
+                const hash = getUniqueId(uniqueRule.toString());
+                clsNameSet.add(hash);
+                uniqueRule.selector = uniqueRule.selector.replace('&', `.${hash}`);
+
+                state.file.metadata.pieces.cssNodes.push({
+                  hash,
+                  node: uniqueRule,
+                });
               });
+            } else {
+              console.warn(`pieces-js will ignore nested selector except contains '&'.\nIf you want this feature, describe it in https://github.com/iheyunfei/pieces-js/issues.`)
             }
             node.remove();
           });
+
+
           cssAst.walkDecls((node) => {
+            const hash = getUniqueId(node.toString());
+            clsNameSet.add(hash);
+
             const uniqueRule = new Rule();
-            const decl = node.toString();
-            const clsName = getUniqueId(decl);
-            uniqueRule.append(decl);
-            uniqueRule.selector = `.${clsName}`;
-            clsNameSet.add(clsName);
+            uniqueRule.append(node);
+            uniqueRule.selector = `.${hash}`;
             uniqueRule.cleanRaws();
-            state.file.metadata.pieces.cssNodes.push(uniqueRule);
+
+            state.file.metadata.pieces.cssNodes.push({
+              hash,
+              node: uniqueRule,
+            });
           });
+
           path.replaceWith(t.stringLiteral([...clsNameSet.values()].join(' ')));
         } else {
           path.skip();
@@ -104,12 +126,7 @@ export const transformAndCollect = async (
   codes: string,
   filename: string,
 ) => {
-  if (!codes.includes(pkgName)) {
-    return {
-      codes,
-      cssNodes: [],
-    }
-  }
+  
 
 
   let ast = null as ReturnType<typeof babel.parse>
