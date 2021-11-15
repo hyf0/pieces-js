@@ -7,7 +7,7 @@ Compile-time atomic CSS library. Heavily inspired by [stylex](https://www.youtub
 - Easy to use with __familiar CSS syntax__
 - __Zero runtime__
 - Transform your __regular CSS to be Atomic__ by compiler
-- Compiling on demand in development
+- __Compiling on demand__ in development
 - No `xxx.config.js` 😉
 
 # TOC
