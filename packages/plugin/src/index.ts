@@ -1,7 +1,8 @@
 import { createUnplugin } from 'unplugin'
 import { stringify } from 'postcss'
-import { pkgName, transformAndCollect } from './babel-collect-plugin'
+import { collect } from './collect'
 import { EnhancedNode } from './types'
+import { pkgName } from './babel-plugin-pieces-collect'
 
 const hashToNodeMap = new Map<string, EnhancedNode>()
 
@@ -17,8 +18,8 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
   return {
     name: '@pieces-js/plugin',
     transformInclude(id) {
-      return ['.ts', 'tsx', '.js', '.jsx', '.vue'].some((ext) =>
-        id.endsWith(ext)
+      return ['.ts', 'tsx', '.js', '.jsx', '.vue', '.svelte'].some((ext) =>
+      id.endsWith(ext)
       )
     },
     resolveId(id) {
@@ -32,7 +33,7 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
       }
 
       try {
-        let { codes: outputCodes, cssNodes } = await transformAndCollect(
+        let { code: outputCode, cssNodes } = await collect(
           code,
           id
         )
@@ -41,11 +42,12 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
 
         cssNodes.forEach((node) => {
           hashToNodeMap.set(node.hash, node)
-          outputCodes += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`
+          outputCode += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`
         })
 
-        return outputCodes
+        return outputCode
       } catch (err) {
+        console.error(`Error occurs in file ${id}:\n`, code)
         // TODO: better error report
         throw err
       }
