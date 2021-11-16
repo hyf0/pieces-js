@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
-import { stringify } from 'postcss';
+import { stringify } from 'postcss'
 import { pkgName, transformAndCollect } from './babel-collect-plugin'
-import { EnhancedNode } from './types';
+import { EnhancedNode } from './types'
 
 const hashToNodeMap = new Map<string, EnhancedNode>()
 
@@ -9,47 +9,59 @@ const virtualPrefix = 'virtual-pieces-js'
 
 type PluginOptions = {
   generate?: {
-    ext?: string,
+    ext?: string
   }
 }
 
 const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
   return {
     name: '@pieces-js/plugin',
-    enforce: 'pre',
-    transformInclude (id) {
-      return ['.ts', 'tsx', '.js', '.jsx'].some(ext => id.endsWith(ext))
+    transformInclude(id) {
+      return ['.ts', 'tsx', '.js', '.jsx', '.vue'].some((ext) =>
+        id.endsWith(ext)
+      )
     },
     resolveId(id) {
       if (id.startsWith(virtualPrefix)) {
         return id
       }
     },
-    async transform (code, id) {
+    async transform(code, id) {
       if (!code.includes(pkgName)) {
         return null
       }
 
-      const ext = pluginOptions?.generate?.ext ?? '.css'
+      try {
+        let { codes: outputCodes, cssNodes } = await transformAndCollect(
+          code,
+          id
+        )
 
-      let { codes: outputCodes, cssNodes } = await transformAndCollect(code, id)
-        
-      cssNodes.forEach(node => {
-        hashToNodeMap.set(node.hash, node)
-        outputCodes += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`;
-      })
+        const ext = pluginOptions?.generate?.ext ?? '.css'
 
-      return outputCodes
+        cssNodes.forEach((node) => {
+          hashToNodeMap.set(node.hash, node)
+          outputCodes += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`
+        })
+
+        return outputCodes
+      } catch (err) {
+        // TODO: better error report
+        throw err
+      }
     },
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
         const ext = pluginOptions?.generate?.ext ?? '.css'
-        const hash = id.slice(id.indexOf('id_') + 'id_'.length, id.indexOf(`${ext}`))
-        const node = hashToNodeMap.get(hash);
+        const hash = id.slice(
+          id.indexOf('id_') + 'id_'.length,
+          id.indexOf(`${ext}`)
+        )
+        const node = hashToNodeMap.get(hash)
         return node!.node.toString(stringify)
       }
       return null
-    }
+    },
   }
 })
 
@@ -66,21 +78,21 @@ module.exports = piecesJs.next({
 })
  * ```
  */
-const next = (pluginOptions: PluginOptions) => (nextConfig: any): any => {
-  return Object.assign({}, nextConfig, {
-    webpack(config: any, options: any) {
-      config.plugins.push(
-        piecesPlugin.webpack(pluginOptions)
-      )
+const next =
+  (pluginOptions: PluginOptions) =>
+  (nextConfig: any): any => {
+    return Object.assign({}, nextConfig, {
+      webpack(config: any, options: any) {
+        config.plugins.push(piecesPlugin.webpack(pluginOptions))
 
-      if (typeof nextConfig.webpack === 'function') {
-        return nextConfig.webpack(config, options)
-      }
+        if (typeof nextConfig.webpack === 'function') {
+          return nextConfig.webpack(config, options)
+        }
 
-      return config
-    },
-  })
-}
+        return config
+      },
+    })
+  }
 
 export default {
   ...piecesPlugin,
