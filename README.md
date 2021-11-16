@@ -7,7 +7,7 @@ A library that __transforms your regular CSS into Atomic CSS__. Heavily inspired
 # Feature
 
 - Easy to use with __familiar CSS syntax__
-- __Zero runtime__
+- __Zero runtime__ for a CSS-in-JS library
 - Transform your __regular CSS into Atomic CSS__ by compiler
 - __Compiling on demand__ in development
 - No `xxx.config.js` 😉
