@@ -62,7 +62,7 @@ export const parseToPieces = (cssCode: string) => {
         break
       case 'rule':
         {
-          if (node.selector.includes('&')) {
+          if (node.selector.startsWith('&:')) {
             node.walkDecls((childDeclNode) => {
               const uniqueRule = new Rule()
               uniqueRule.append(childDeclNode)
@@ -84,8 +84,8 @@ export const parseToPieces = (cssCode: string) => {
               })
             })
           } else {
-            console.warn(
-              `pieces-js will ignore nested selector '${node.selector}' except contains '&'.\nIf you want this feature, describe it in https://github.com/iheyunfei/pieces-js/issues.`
+            throw new Error(
+              `Not supported selector '${node.selector}'.\nIf you want this feature, describe it in https://github.com/iheyunfei/pieces-js/issues.`
             )
           }
         }
