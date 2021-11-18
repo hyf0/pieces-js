@@ -1,6 +1,6 @@
 import * as babel from '@babel/core'
 import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core'
-import postcss, { AtRule, Declaration, Rule, stringify } from 'postcss'
+import postcss, { AtRule, Declaration, Rule, ChildNode } from 'postcss'
 import { getUniqueId } from './helper'
 import { EnhancedNode } from './types'
 
@@ -21,6 +21,24 @@ type State = {
   }
 }
 
+const throwIfCSSNodeNotSupported = (node: ChildNode) => {
+  switch (node.type) {
+    case 'atrule':
+      return true
+    case 'decl':
+      return true
+    case 'rule': {
+      if (!node.selector.startsWith('&:')) {
+        throw new Error(
+          `Not supported selector '${node.selector}'.\nIf you think it should be supproted, describe it in https://github.com/iheyunfei/pieces-js/issues.`
+        )
+      }
+      return true
+    }
+  }
+  return false
+}
+
 export const parseToPieces = (cssCode: string) => {
   const cssAst = postcss.parse(cssCode)
 
@@ -30,6 +48,8 @@ export const parseToPieces = (cssCode: string) => {
   const nodes: EnhancedNode[] = []
 
   cssAst.nodes?.slice().forEach((node) => {
+    throwIfCSSNodeNotSupported(node)
+
     switch (node.type) {
       case 'atrule':
         {
@@ -62,32 +82,23 @@ export const parseToPieces = (cssCode: string) => {
         break
       case 'rule':
         {
-          if (node.selector.startsWith('&:')) {
-            node.walkDecls((childDeclNode) => {
-              const uniqueRule = new Rule()
-              uniqueRule.append(childDeclNode)
-              uniqueRule.selector = node.selector
-              uniqueRule.cleanRaws()
-              // We need hash of 'decl + selector' to make no conflict with hash of decl
-              const raw = uniqueRule.toString()
-              const hash = getUniqueId(raw)
-              clsNameSet.add(hash)
-              uniqueRule.selector = uniqueRule.selector.replace(
-                '&',
-                `.${hash}`
-              )
+          node.walkDecls((childDeclNode) => {
+            const uniqueRule = new Rule()
+            uniqueRule.append(childDeclNode)
+            uniqueRule.selector = node.selector
+            uniqueRule.cleanRaws()
+            // We need hash of 'decl + selector' to make no conflict with hash of decl
+            const raw = uniqueRule.toString()
+            const hash = getUniqueId(raw)
+            clsNameSet.add(hash)
+            uniqueRule.selector = uniqueRule.selector.replace('&', `.${hash}`)
 
-              nodes.push({
-                hash,
-                node: uniqueRule,
-                raw,
-              })
+            nodes.push({
+              hash,
+              node: uniqueRule,
+              raw,
             })
-          } else {
-            throw new Error(
-              `Not supported selector '${node.selector}'.\nIf you want this feature, describe it in https://github.com/iheyunfei/pieces-js/issues.`
-            )
-          }
+          })
         }
         break
       case 'comment':
@@ -95,7 +106,6 @@ export const parseToPieces = (cssCode: string) => {
         }
         break
     }
-
   })
 
   return {
@@ -144,7 +154,7 @@ export default function collector({ types: t }: typeof babel): {
           const cssCode = node.quasi.quasis
             .map((node) => node.value.raw)
             .join('\n')
-          
+
           const { className, nodes } = parseToPieces(cssCode)
 
           state.file.metadata.pieces.cssNodes.push(...nodes)

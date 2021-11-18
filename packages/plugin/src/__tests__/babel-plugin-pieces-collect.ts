@@ -40,4 +40,34 @@ describe('parseToPieces', () => {
       expect(cls2).toContain(cls1)
     }
   })
+
+  it('should throw for nested selector', () => {
+    {
+      expect(() => {
+        parseToPieces(`
+        &.hello {
+          color: red;
+        }
+        .hello {
+          color: red;
+        }
+      `)
+      }).toThrowError()
+    }
+  })
+
+  it('should be cool for Pseudo-classes and Pseudo-elements ', () => {
+    {
+      expect(() => {
+        parseToPieces(`
+        &:hover {
+          color: red;
+        }
+        &::after {
+          content: 'hello';
+        }
+      `)
+      }).not.toThrow()
+    }
+  })
 })
