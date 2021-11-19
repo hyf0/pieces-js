@@ -1,6 +1,6 @@
 {
   "name": "@pieces-js/plugin",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "main": "dist/src/index.js",
   "license": "MIT",
   "files": [

@@ -1,1 +1,1 @@
-export const virtualPrefix = 'virtual:pieces-js'
+export const virtualPrefix = '$pieces-js$'
