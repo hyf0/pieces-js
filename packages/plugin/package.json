@@ -1,6 +1,6 @@
 {
   "name": "@pieces-js/plugin",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "main": "dist/src/index.js",
   "license": "MIT",
   "files": [
@@ -10,7 +10,7 @@
     "prepack": "pnpm test && pnpm build",
     "test": "jest",
     "dev": "tsc -b --watch",
-    "build": "tsc -b"
+    "build": "tsc -b -clean && tsc -b"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",

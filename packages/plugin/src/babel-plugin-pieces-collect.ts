@@ -1,7 +1,7 @@
 import * as babel from '@babel/core'
 import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core'
 import postcss, { AtRule, Declaration, Rule, ChildNode } from 'postcss'
-import { getUniqueId } from './helper'
+import { genNoConfilctHash } from './helper'
 import { EnhancedNode } from './types'
 
 export const pkgName = '@pieces-js/tag'
@@ -54,7 +54,7 @@ export const parseToPieces = (cssCode: string) => {
       case 'atrule':
         {
           const raw = node.toString()
-          const hash = getUniqueId(raw)
+          const hash = genNoConfilctHash(raw)
           nodes.push({
             hash,
             node,
@@ -65,7 +65,7 @@ export const parseToPieces = (cssCode: string) => {
       case 'decl':
         {
           const raw = node.toString()
-          const hash = getUniqueId(raw)
+          const hash = genNoConfilctHash(raw)
           clsNameSet.add(hash)
 
           const uniqueRule = new Rule()
@@ -89,7 +89,7 @@ export const parseToPieces = (cssCode: string) => {
             uniqueRule.cleanRaws()
             // We need hash of 'decl + selector' to make no conflict with hash of decl
             const raw = uniqueRule.toString()
-            const hash = getUniqueId(raw)
+            const hash = genNoConfilctHash(raw)
             clsNameSet.add(hash)
             uniqueRule.selector = uniqueRule.selector.replace('&', `.${hash}`)
 
