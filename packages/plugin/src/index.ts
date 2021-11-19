@@ -1,26 +1,23 @@
 import { createUnplugin } from 'unplugin'
-import { stringify } from 'postcss'
 import { collect } from './collect'
 import { EnhancedNode } from './types'
 import { pkgName } from './babel-plugin-pieces-collect'
+import { virtualPrefix } from './const'
 
-const hashToNodeMap = new Map<string, EnhancedNode>()
-
-const virtualPrefix = 'virtual-pieces-js'
-
-type PluginOptions = {
+export type PluginOptions = {
   generate?: {
     ext?: string
   }
 }
 
 const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
+  const cssFileExt = pluginOptions?.generate?.ext ?? '.css'
+  const hashToNodeMap = new Map<string, EnhancedNode>()
+
   return {
     name: '@pieces-js/plugin',
     transformInclude(id) {
-      return ['.ts', 'tsx', '.js', '.jsx', '.vue', '.svelte'].some((ext) =>
-      id.endsWith(ext)
-      )
+      return /\.(ts|tsx|js|jsx|vue|svelte)$/.test(id)
     },
     resolveId(id) {
       if (id.startsWith(virtualPrefix)) {
@@ -33,34 +30,37 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
       }
 
       try {
-        let { code: outputCode, cssNodes } = await collect(
-          code,
-          id
-        )
+        let { code: outputCode, cssNodes } = await collect(code, id)
 
-        const ext = pluginOptions?.generate?.ext ?? '.css'
-
-        cssNodes.forEach((node) => {
+        for (const node of cssNodes) {
           hashToNodeMap.set(node.hash, node)
-          outputCode += `\n;import '${virtualPrefix}/id_${node.hash}${ext}';`
-        })
+          outputCode =
+            `import '${virtualPrefix}/styles/id_${node.hash}_id${cssFileExt}';\n` +
+            outputCode
+        }
 
         return outputCode
-      } catch (err) {
-        console.error(`Error occurs in file ${id}:\n`, code)
-        // TODO: better error report
-        throw err
+      } catch (_err) {
+        throw new Error(
+          `Error ocurrs while collecting css\`...\` in file ${id}:\nPlease raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+        )
       }
     },
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
-        const ext = pluginOptions?.generate?.ext ?? '.css'
-        const hash = id.slice(
-          id.indexOf('id_') + 'id_'.length,
-          id.indexOf(`${ext}`)
-        )
+        const hash = id.match(/id_(.+)_id/)?.[1]
+        if (!hash) {
+          throw new Error(
+            `Unexpected imported file ${id}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+          )
+        }
         const node = hashToNodeMap.get(hash)
-        return node!.node.toString(stringify)
+        if (!node) {
+          throw new Error(
+            `Node not founded for hash ${hash}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+          )
+        }
+        return node.node.toString()
       }
       return null
     },

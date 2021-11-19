@@ -10,6 +10,5 @@ describe('hash', () => {
         expect(hashSet.has(hash)).toBe(false)
         hashSet.add(hash)
       })
-    console.log('hashSet', hashSet)
   })
 })

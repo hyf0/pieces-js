@@ -1,6 +1,6 @@
 import * as babel from '@babel/core'
-import { Visitor, BabelFileMetadata, ParserOptions } from '@babel/core'
-import postcss, { AtRule, Declaration, Rule, ChildNode } from 'postcss'
+import { Visitor, BabelFileMetadata } from '@babel/core'
+import postcss, { Rule, ChildNode } from 'postcss'
 import { genNoConfilctHash } from './helper'
 import { EnhancedNode } from './types'
 
@@ -126,6 +126,7 @@ export default function collector({ types: t }: typeof babel): {
         if (path.node.source.value === pkgName) {
           path.traverse({
             ImportSpecifier(path) {
+              // Handle case like: import { css as jss } from '@pieces-js/tag'
               if (
                 path.node.local.name !==
                 state.file.metadata.pieces.importTagFnName
@@ -135,6 +136,8 @@ export default function collector({ types: t }: typeof babel): {
               }
             },
           })
+          // Remove it. Since it won't be used in runtime.
+          path.remove()
         } else {
           path.skip()
         }

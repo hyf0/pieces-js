@@ -3,10 +3,12 @@ import { ParserOptions } from '@babel/core'
 import { WithPiecesMetadata } from './babel-plugin-pieces-collect'
 
 export const collect = async (code: string, id: string) => {
-  
   const transformOptions = resolveTransfromOptionsById(id)
 
-  const { code: transformedCode, cssNodes  } = await transform(code, transformOptions)
+  const { code: transformedCode, cssNodes } = await transform(
+    code,
+    transformOptions
+  )
 
   return {
     code: transformedCode,
@@ -44,7 +46,10 @@ const resolveTransfromOptionsById = (id: string): babel.TransformOptions => {
   }
 }
 
-export const transform = async (code: string, options: babel.TransformOptions) => {
+export const transform = async (
+  code: string,
+  options: babel.TransformOptions
+) => {
   const result = await babel.transformAsync(code, options)
   const { metadata, code: transformedCodes } = result!
   const {
