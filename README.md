@@ -33,9 +33,51 @@ yarn add @pieces-js/tag
 yarn add -D @pieces-js/plugin
 ```
 
-# Examples
+## Overview
+
+```tsx
+import { css } from '@pieces-js/tag'
+
+const className = css`
+  color: red;
+  font-size: 24px;
+  &:hover {
+    color: blue;
+  }
+`
+
+const className2 = css`
+  color: red;
+  font-size: 48px;
+`
+
+// --- will compile to ---
+
+const className = 'c1 c2 c3'
+
+const className2 = 'c1 c4'
+```
+
+with gennerated style
+
+```css
+.c1 {
+  color: red;
+}
+.c2 {
+  font-size: 24px;
+}
+.c3:hover {
+  color: blue;
+}
+.c4 {
+  font-size: 48px;
+}
+```
+
+<!-- # Examples
 
 - [Webpack + React]()
-- [Vite + React]()
+- [Vite + React]() -->
 
 
