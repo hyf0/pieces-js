@@ -1,8 +1,8 @@
 import * as babel from '@babel/core'
 import { Visitor, BabelFileMetadata } from '@babel/core'
 import postcss, { Rule, ChildNode } from 'postcss'
-import { genNoConfilctHash } from './helper'
-import { EnhancedNode } from './types'
+import { genNoConfilctHash } from './utils'
+import { EnhancedNode } from './EnhancedNode'
 
 export const pkgName = '@pieces-js/tag'
 
@@ -36,7 +36,7 @@ const throwIfCSSNodeNotSupported = (node: ChildNode) => {
       return true
     }
   }
-  return false
+  return true
 }
 
 export const parseToPieces = (cssCode: string) => {
@@ -55,11 +55,7 @@ export const parseToPieces = (cssCode: string) => {
         {
           const raw = node.toString()
           const hash = genNoConfilctHash(raw)
-          nodes.push({
-            hash,
-            node,
-            raw,
-          })
+          nodes.push(new EnhancedNode(node, hash))
         }
         break
       case 'decl':
@@ -73,11 +69,7 @@ export const parseToPieces = (cssCode: string) => {
           uniqueRule.selector = `.${hash}`
           uniqueRule.cleanRaws()
 
-          nodes.push({
-            hash,
-            node: uniqueRule,
-            raw,
-          })
+          nodes.push(new EnhancedNode(uniqueRule, hash))
         }
         break
       case 'rule':
@@ -93,11 +85,7 @@ export const parseToPieces = (cssCode: string) => {
             clsNameSet.add(hash)
             uniqueRule.selector = uniqueRule.selector.replace('&', `.${hash}`)
 
-            nodes.push({
-              hash,
-              node: uniqueRule,
-              raw,
-            })
+            nodes.push(new EnhancedNode(uniqueRule, hash))
           })
         }
         break
@@ -136,6 +124,7 @@ export default function collector({ types: t }: typeof babel): {
               }
             },
           })
+          
           // Remove it. Since it won't be used in runtime.
           path.remove()
         } else {

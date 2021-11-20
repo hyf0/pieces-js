@@ -2,19 +2,25 @@ import * as babel from '@babel/core'
 import { ParserOptions } from '@babel/core'
 import { WithPiecesMetadata } from './babel-plugin-pieces-collect'
 
-export const collect = async (code: string, id: string) => {
+export const transformAndCollect = async (inputCode: string, id: string, options?: {
+  parserPlugins?: ParserOptions['plugins']
+}) => {
   const transformOptions = resolveTransfromOptionsById(id)
 
-  const { code: transformedCode, cssNodes } = await transform(
-    code,
-    transformOptions
-  )
+  transformOptions.parserOpts?.plugins?.push(...(options?.parserPlugins ?? []))
 
+  const result = await babel.transformAsync(inputCode, transformOptions)
+  const { metadata, code: code, map } = result!
+  const {
+    pieces: { cssNodes },
+  } = metadata! as WithPiecesMetadata
   return {
-    code: transformedCode,
+    code: code ?? inputCode,
     cssNodes,
+    map,
   }
 }
+
 
 const resolveTransfromOptionsById = (id: string): babel.TransformOptions => {
   const parserPlugins: ParserOptions['plugins'] = [
@@ -43,20 +49,5 @@ const resolveTransfromOptionsById = (id: string): babel.TransformOptions => {
     babelrc: false,
     configFile: false,
     sourceMaps: true,
-  }
-}
-
-export const transform = async (
-  code: string,
-  options: babel.TransformOptions
-) => {
-  const result = await babel.transformAsync(code, options)
-  const { metadata, code: transformedCodes } = result!
-  const {
-    pieces: { cssNodes },
-  } = metadata! as WithPiecesMetadata
-  return {
-    code: transformedCodes ?? code,
-    cssNodes,
   }
 }

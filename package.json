@@ -4,7 +4,10 @@
   "description": "Compile-time atomic css",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "pnpm dev --filter @pieces-js/*",
+    "test": "pnpm test:unit && pnpm test:bundle:build",
+    "test:unit": "pnpm test:unit --filter @pieces-js/*",
+    "test:bundle:build": "pnpm build --filter ./packages/playground"
   },
   "repository": {
     "type": "git",

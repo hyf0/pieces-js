@@ -1,9 +1,9 @@
-import { collect } from '../collect'
+import { transformAndCollect } from '../collect'
 import { parseToPieces } from '../babel-plugin-pieces-collect'
 
 describe('babel-plugin-pieces-collect', () => {
   it('basic', async () => {
-    const { code, cssNodes } = await collect(
+    const { code, cssNodes } = await transformAndCollect(
       `css
         \`
           color: red;

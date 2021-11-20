@@ -1,4 +1,4 @@
-import { genNoConfilctHash } from '../helper'
+import { genNoConfilctHash } from '../utils'
 
 describe('hash', () => {
   it('avoid hash collision', () => {

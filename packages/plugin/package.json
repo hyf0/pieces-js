@@ -1,14 +1,14 @@
 {
   "name": "@pieces-js/plugin",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "main": "dist/src/index.js",
   "license": "MIT",
   "files": [
     "dist/*"
   ],
   "scripts": {
-    "prepack": "pnpm test && pnpm build",
-    "test": "jest",
+    "prepack": "pnpm -w test && pnpm build",
+    "test:unit": "jest",
     "dev": "tsc -b --watch",
     "build": "tsc -b -clean && tsc -b"
   },

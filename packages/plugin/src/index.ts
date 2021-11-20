@@ -1,11 +1,21 @@
 import { createUnplugin } from 'unplugin'
-import { collect } from './collect'
-import { EnhancedNode } from './types'
+import { ParserOptions } from '@babel/core'
+
+import { transformAndCollect } from './collect'
+import { EnhancedNode } from './EnhancedNode'
 import { pkgName } from './babel-plugin-pieces-collect'
-import { virtualPrefix } from './const'
+import { caredExtRegExp, virtualPrefix } from './const'
 
 export type PluginOptions = {
+  /**
+   * @description Customize babel parser plugins to support any syntax.
+   */
+  parserPlugins?: ParserOptions['plugins']
   generate?: {
+    /**
+     * @description informs bundler how to handle gennerated css file.
+     * @default '.css'
+     */
     ext?: string
   }
 }
@@ -17,29 +27,32 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
   return {
     name: '@pieces-js/plugin',
     transformInclude(id) {
-      return /\.(ts|tsx|js|jsx|vue|svelte)$/.test(id)
+      return caredExtRegExp.test(id)
     },
     resolveId(id) {
-      if (id.startsWith(virtualPrefix)) {
-        return id
-      }
+      return id.startsWith(virtualPrefix) ? id : null
     },
-    async transform(code, id) {
-      if (!code.includes(pkgName)) {
+    async transform(inputCode, id) {
+      if (!inputCode.includes(pkgName)) {
         return null
       }
 
       try {
-        let { code: outputCode, cssNodes } = await collect(code, id)
+        let { code, cssNodes } = await transformAndCollect(inputCode, id, {
+          parserPlugins: pluginOptions?.parserPlugins,
+        })
 
         for (const node of cssNodes) {
           hashToNodeMap.set(node.hash, node)
-          outputCode =
+          code =
             `import '${virtualPrefix}/styles/id_${node.hash}_id${cssFileExt}';\n` +
-            outputCode
+            code
         }
 
-        return outputCode
+        return {
+          code: code,
+          // map,
+        }
       } catch (_err) {
         throw new Error(
           `Error ocurrs while collecting css\`...\` in file ${id}:\nPlease raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
@@ -48,19 +61,19 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
     },
     async load(id) {
       if (id.startsWith(virtualPrefix)) {
-        const hash = id.match(/id_(.+)_id/)?.[1]
+        const hash = id.match(/id_(.+)_id\./)?.[1]
         if (!hash) {
           throw new Error(
-            `Unexpected imported file ${id}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+            `Unknown css file ${id}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
           )
         }
         const node = hashToNodeMap.get(hash)
         if (!node) {
           throw new Error(
-            `Node not founded for hash ${hash}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+            `Node is not founded for hash ${hash}, Please raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
           )
         }
-        return node.node.toString()
+        return node.gennerate()
       }
       return null
     },
