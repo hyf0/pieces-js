@@ -1,4 +1,4 @@
-# pieces-js
+# pieces-js(WIP)
 
 A library that __transforms your regular CSS into Atomic CSS in compile time__. Heavily inspired by [stylex](https://www.youtube.com/watch?v=ur-sGzUWId4) and [linaria](https://github.com/callstack/linaria).
 
