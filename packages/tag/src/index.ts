@@ -17,5 +17,5 @@ export const css = (
   _literals: TemplateStringsArray,
   ...expresstions: never[]
 ): string => {
-  throw new SyntaxError("Do not call css() in runtime!");
+  throw new SyntaxError("Do not call css(...) in runtime!");
 };

@@ -55,7 +55,9 @@ const piecesPlugin = createUnplugin<PluginOptions>((pluginOptions) => {
         }
       } catch (_err) {
         throw new Error(
-          `Error ocurrs while collecting css\`...\` in file ${id}:\nPlease raise a issue in https://github.com/iheyunfei/pieces-js/issues.`
+          `Error ocurrs while parsing and collecting css\`...\` in file ${id}:\nPlease raise a issue in https://github.com/iheyunfei/pieces-js/issues.`,
+          // @ts-ignore
+          { cause: _err }
         )
       }
     },

@@ -1,7 +1,12 @@
 {
   "name": "@pieces-js/plugin",
-  "version": "0.0.19",
-  "main": "dist/src/index.js",
+  "version": "0.0.20",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "exports": {
+    "import": "./dist/index.mjs",
+    "require": "./dist/index.js"
+  },
   "license": "MIT",
   "files": [
     "dist/*"
@@ -9,8 +14,9 @@
   "scripts": {
     "prepack": "pnpm -w test && pnpm build",
     "test:unit": "jest",
-    "dev": "tsc -b --watch",
-    "build": "tsc -b -clean && tsc -b"
+    "dev": "pnpm build -- --watch",
+    "clean": "rimraf dist",
+    "build": "pnpm clean && tsup src/index.ts --dts --format cjs,esm --no-splitting"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",

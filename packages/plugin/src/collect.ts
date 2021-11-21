@@ -1,5 +1,6 @@
 import * as babel from '@babel/core'
 import { ParserOptions } from '@babel/core'
+import babelPluginPiecesCollect from './babel-plugin-pieces-collect'
 import { WithPiecesMetadata } from './babel-plugin-pieces-collect'
 
 export const transformAndCollect = async (inputCode: string, id: string, options?: {
@@ -41,8 +42,7 @@ const resolveTransfromOptionsById = (id: string): babel.TransformOptions => {
 
   return {
     filename: id,
-    //@ts-ignore
-    plugins: [require.resolve('./babel-plugin-pieces-collect')],
+    plugins: [babelPluginPiecesCollect],
     parserOpts: {
       plugins: [...parserPlugins],
     },

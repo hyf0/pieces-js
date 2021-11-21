@@ -53,6 +53,20 @@ export const parseToPieces = (cssCode: string) => {
     switch (node.type) {
       case 'atrule':
         {
+          node.nodes.slice().forEach(childNode => {
+            if (childNode.type === 'decl') {
+              const raw = childNode.toString()
+              const hash = genNoConfilctHash(raw)
+              clsNameSet.add(hash)
+
+              const uniqueRule = new Rule()
+              uniqueRule.append(childNode.clone())
+              uniqueRule.selector = `.${hash}`
+              uniqueRule.cleanRaws()
+
+              childNode.replaceWith(uniqueRule)
+            }
+          })
           const raw = node.toString()
           const hash = genNoConfilctHash(raw)
           nodes.push(new EnhancedNode(node, hash))
