@@ -14,7 +14,7 @@ A library that __transforms your regular CSS into Atomic CSS in compile time__. 
 
 # Documentation
 
-- [Examples](#Examples)
+<!-- - [Examples](#Examples) -->
 - [Setup](./docs/setup)
   - [with Next.js](./docs/setup/next.md)
   - [with Vite](./docs/setup/vite.md)
