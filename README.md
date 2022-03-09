@@ -1,4 +1,4 @@
-# Using tailwindcss or windicss instead
+# Using [tailwindcss](https://tailwindcss.com/) or [windicss](https://windicss.org/) instead
 
 # pieces-js(WIP)
 
